@@ -169,7 +169,7 @@ task run_sim;
   /////// Activation data writing to memory ///////
   for (t=0; t<len_nij; t=t+1) begin  
     #0.5 clk = 1'b0;  
-    x_scan_file = $fscanf(x_file,"%16b", D_xmem); 
+    x_scan_file = $fscanf(x_file,"%32b", D_xmem); 
     WEN_xmem = 0; CEN_xmem = 0; 
     if (t>0) A_xmem = A_xmem + 1;
     #0.5 clk = 1'b1;   
@@ -227,7 +227,7 @@ task run_sim;
 
     for (t=0; t<col; t=t+1) begin  
       #0.5 clk = 1'b0;  
-      w_scan_file = (mode)? $fscanf(w_file,"%16b", D_xmem) : $fscanf(w_file,"%32b", D_xmem); 
+      w_scan_file = $fscanf(w_file,"%32b", D_xmem); 
       WEN_xmem = 0; CEN_xmem = 0; 
       if (t>0) A_xmem = A_xmem + 1; 
       #0.5 clk = 1'b1;  
