@@ -2,6 +2,11 @@
 // Please do not spread this code without permission 
 `timescale 1ns/1ps
 
+`define BIT4 0
+`define BIT2 1
+`define WS 0
+`define OS 1
+
 module core_tb;
 
 parameter bw = 4;
@@ -11,6 +16,8 @@ parameter len_onij = 16; // output image = 4 x 4
 parameter col = 8;
 parameter row = 8;
 parameter len_nij = 36;  // input image = 6 x 6
+parameter len_kij_sqrt = 3;
+parameter len_onij_sqrt = 4;
 
 reg clk = 0;
 reg reset = 1;
@@ -40,12 +47,13 @@ reg execute_q = 0;
 reg load_q = 0;
 reg acc_q = 0;
 reg acc = 0;
+reg relu_q = 0;
 
 reg [1:0]  inst_w; 
 reg [bw*row-1:0] D_xmem;
 reg [psum_bw*col-1:0] answer;
 
-
+reg relu;
 reg ofifo_rd;
 reg ififo_wr;
 reg ififo_rd;
@@ -59,7 +67,8 @@ wire ofifo_valid;
 wire [col*psum_bw-1:0] sfp_out;
 
 reg [31:0] D_2D [63:0];
-
+reg [1:0] mode = 0;
+reg [10:0] A_pmem_tmp = 0;
 
 integer x_file, x_scan_file ; // file_handler
 integer w_file, w_scan_file ; // file_handler
@@ -68,7 +77,8 @@ integer out_file, out_scan_file ; // file_handler
 integer captured_data; 
 integer t, i, j, k, kij;
 integer error;
-assign inst_q[34] = 0;
+
+assign inst_q[34] = relu_q;
 assign inst_q[33] = acc_q;
 assign inst_q[32] = CEN_pmem_q;
 assign inst_q[31] = WEN_pmem_q;
@@ -89,13 +99,47 @@ core  #(.bw(bw), .col(col), .row(row)) core_instance (
 	.clk(clk), 
 	.inst(inst_q),
 	.ofifo_valid(ofifo_valid),
-        .D_xmem(D_xmem_q), 
-        .sfp_out(sfp_out), 
+  .D_xmem(D_xmem_q), 
+  .sfp_out(sfp_out), 
 	.reset(reset)); 
 
 
-initial begin 
+initial begin
+  $dumpfile("core_tb.vcd");
+  $dumpvars(0,core_tb);
 
+  reset_hardware();
+  $display("Part 1: test");
+  run_sim("txt_files/activation.txt", "txt_files/weight", "txt_files/output.txt");
+  //run_sim("activation.txt", "weight", "output.txt");
+  #10 $finish;
+end
+
+task reset_hardware;
+  begin
+    //////// Reset /////////
+    #0.5 clk = 1'b0;   reset = 1;
+    #0.5 clk = 1'b1; 
+
+    for (i=0; i<10 ; i=i+1) begin
+      #0.5 clk = 1'b0;
+      #0.5 clk = 1'b1;  
+    end
+
+    #0.5 clk = 1'b0;   reset = 0;
+    #0.5 clk = 1'b1; 
+
+    #0.5 clk = 1'b0;   
+    #0.5 clk = 1'b1;   
+    /////////////////////////
+  end
+endtask
+
+task run_sim;
+  input [8*30:1] act_file;
+  input [8*30:1] wgt_file;
+  input [8*30:1] out_file;
+  begin
   inst_w   = 0; 
   D_xmem   = 0;
   CEN_xmem = 1;
@@ -108,32 +152,16 @@ initial begin
   l0_wr    = 0;
   execute  = 0;
   load     = 0;
-
-  $dumpfile("core_tb.vcd");
-  $dumpvars(0,core_tb);
+  relu     = 0;
 
   //x_file = $fopen("activation_tile0.txt", "r");
-  x_file = $fopen("txt_files/activation.txt", "r");
+  x_file = $fopen(act_file, "r");
   // Following three lines are to remove the first three comment lines of the file
   x_scan_file = $fscanf(x_file,"%s", captured_data);
   x_scan_file = $fscanf(x_file,"%s", captured_data);
   x_scan_file = $fscanf(x_file,"%s", captured_data);
 
-  //////// Reset /////////
-  #0.5 clk = 1'b0;   reset = 1;
-  #0.5 clk = 1'b1; 
 
-  for (i=0; i<10 ; i=i+1) begin
-    #0.5 clk = 1'b0;
-    #0.5 clk = 1'b1;  
-  end
-
-  #0.5 clk = 1'b0;   reset = 0;
-  #0.5 clk = 1'b1; 
-
-  #0.5 clk = 1'b0;   
-  #0.5 clk = 1'b1;   
-  /////////////////////////
 
   /////// Activation data writing to memory ///////
   for (t=0; t<len_nij; t=t+1) begin  
@@ -154,26 +182,15 @@ initial begin
   for (kij=0; kij<9; kij=kij+1) begin  // kij loop
 
     case(kij)
-     /*     
-     0: w_file_name = "weight_itile0_otile0_kij0.txt";
-     1: w_file_name = "weight_itile0_otile0_kij1.txt";
-     2: w_file_name = "weight_itile0_otile0_kij2.txt";
-     3: w_file_name = "weight_itile0_otile0_kij3.txt";
-     4: w_file_name = "weight_itile0_otile0_kij4.txt";
-     5: w_file_name = "weight_itile0_otile0_kij5.txt";
-     6: w_file_name = "weight_itile0_otile0_kij6.txt";
-     7: w_file_name = "weight_itile0_otile0_kij7.txt";
-     8: w_file_name = "weight_itile0_otile0_kij8.txt";
-     */
-     0: w_file_name = "txt_files/weight_kij0.txt";
-     1: w_file_name = "txt_files/weight_kij1.txt";
-     2: w_file_name = "txt_files/weight_kij2.txt";
-     3: w_file_name = "txt_files/weight_kij3.txt";
-     4: w_file_name = "txt_files/weight_kij4.txt";
-     5: w_file_name = "txt_files/weight_kij5.txt";
-     6: w_file_name = "txt_files/weight_kij6.txt";
-     7: w_file_name = "txt_files/weight_kij7.txt";
-     8: w_file_name = "txt_files/weight_kij8.txt";
+     0: w_file_name = {wgt_file, "_kij0.txt"};
+     1: w_file_name = {wgt_file, "_kij1.txt"};
+     2: w_file_name = {wgt_file, "_kij2.txt"};
+     3: w_file_name = {wgt_file, "_kij3.txt"};
+     4: w_file_name = {wgt_file, "_kij4.txt"};
+     5: w_file_name = {wgt_file, "_kij5.txt"};
+     6: w_file_name = {wgt_file, "_kij6.txt"};
+     7: w_file_name = {wgt_file, "_kij7.txt"};
+     8: w_file_name = {wgt_file, "_kij8.txt"};
     endcase
     
 
@@ -334,8 +351,8 @@ initial begin
 
   ////////// Accumulation /////////
   //out_file = $fopen("out.txt", "r");  
-  out_file = $fopen("txt_files/output.txt", "r");  
-  acc_file = $fopen("txt_files/acc_address.txt", "r");
+  out_file = $fopen(out_file, "r");  
+  //acc_file = $fopen("txt_files/acc_address.txt", "r");
   // Following three lines are to remove the first three comment lines of the file
   out_scan_file = $fscanf(out_file,"%s", answer); 
   out_scan_file = $fscanf(out_file,"%s", answer); 
@@ -349,7 +366,7 @@ initial begin
 
   for (i=0; i<len_onij+1; i=i+1) begin 
 
-    #0.5 clk = 1'b0; 
+    #0.5 clk = 1'b0; relu = 0;
     #0.5 clk = 1'b1; 
 
     if (i>0) begin
@@ -369,21 +386,33 @@ initial begin
     #0.5 clk = 1'b1;  
     #0.5 clk = 1'b0; reset = 0; 
     #0.5 clk = 1'b1;  
+    A_pmem = 0;
+    A_pmem_tmp = 0;
 
     for (j=0; j<len_kij+1; j=j+1) begin 
 
       #0.5 clk = 1'b0;   
-        if (j<len_kij) begin CEN_pmem = 0; WEN_pmem = 1; acc_scan_file = $fscanf(acc_file,"%11b", A_pmem); end
-        else  begin CEN_pmem = 1; WEN_pmem = 1; end
 
+        if (j<len_kij) begin
+          CEN_pmem = 0; WEN_pmem = 1; 
+          case((j / len_kij_sqrt) % len_kij_sqrt)
+            0: A_pmem = (11'd0 + i) + 11'd37 * (j % len_kij_sqrt) + 11'd2 * (i / len_onij_sqrt); // 0, 114, 228
+            1: A_pmem = (11'd114 + i) + 11'd37 * (j % len_kij_sqrt) + 11'd2 * (i / len_onij_sqrt);
+            2: A_pmem = (11'd228 + i) + 11'd37 * (j % len_kij_sqrt) + 11'd2 * (i / len_onij_sqrt);
+          endcase
+          //acc_scan_file = $fscanf(acc_file, "%11b", A_pmem_tmp);
+          //if(A_pmem != A_pmem_tmp) $display("%11b, %11b", A_pmem, A_pmem_tmp);
+        end else begin
+          CEN_pmem = 1; WEN_pmem = 1;
+        end
         if (j>0)  acc = 1;  
       #0.5 clk = 1'b1;   
     end
 
-    #0.5 clk = 1'b0; acc = 0;
+    #0.5 clk = 1'b0; acc = 0; relu = 1;
     #0.5 clk = 1'b1; 
   end
-
+  relu = 0;
 
   if (error == 0) begin
   	$display("############ No error detected ##############"); 
@@ -399,9 +428,9 @@ initial begin
     #0.5 clk = 1'b1;  
   end
 
-  #10 $finish;
-
-end
+  //#10 $finish;
+  end
+endtask
 
 always @ (posedge clk) begin
    inst_w_q   <= inst_w; 
@@ -420,11 +449,8 @@ always @ (posedge clk) begin
    l0_wr_q    <= l0_wr ;
    execute_q  <= execute;
    load_q     <= load;
+   relu_q     <= relu;
 end
 
 
 endmodule
-
-
-
-
