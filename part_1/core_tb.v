@@ -113,7 +113,7 @@ initial begin
   $dumpvars(0,core_tb);
 
   //x_file = $fopen("activation_tile0.txt", "r");
-  x_file = $fopen("txt_files/activation.txt", "r");
+  x_file = $fopen("txt_files<no/activation.txt", "r");
   // Following three lines are to remove the first three comment lines of the file
   x_scan_file = $fscanf(x_file,"%s", captured_data);
   x_scan_file = $fscanf(x_file,"%s", captured_data);
@@ -165,15 +165,15 @@ initial begin
      7: w_file_name = "weight_itile0_otile0_kij7.txt";
      8: w_file_name = "weight_itile0_otile0_kij8.txt";
      */
-     0: w_file_name = "txt_files/weight_kij0.txt";
-     1: w_file_name = "txt_files/weight_kij1.txt";
-     2: w_file_name = "txt_files/weight_kij2.txt";
-     3: w_file_name = "txt_files/weight_kij3.txt";
-     4: w_file_name = "txt_files/weight_kij4.txt";
-     5: w_file_name = "txt_files/weight_kij5.txt";
-     6: w_file_name = "txt_files/weight_kij6.txt";
-     7: w_file_name = "txt_files/weight_kij7.txt";
-     8: w_file_name = "txt_files/weight_kij8.txt";
+     0: w_file_name = "txt_files<no/weight_kij0.txt";
+     1: w_file_name = "txt_files<no/weight_kij1.txt";
+     2: w_file_name = "txt_files<no/weight_kij2.txt";
+     3: w_file_name = "txt_files<no/weight_kij3.txt";
+     4: w_file_name = "txt_files<no/weight_kij4.txt";
+     5: w_file_name = "txt_files<no/weight_kij5.txt";
+     6: w_file_name = "txt_files<no/weight_kij6.txt";
+     7: w_file_name = "txt_files<no/weight_kij7.txt";
+     8: w_file_name = "txt_files<no/weight_kij8.txt";
     endcase
     
 
@@ -334,7 +334,7 @@ initial begin
 
   ////////// Accumulation /////////
   //out_file = $fopen("out.txt", "r");  
-  out_file = $fopen("txt_files/output.txt", "r");  
+  out_file = $fopen("txt_files<no/output.txt", "r");  
   acc_file = $fopen("txt_files/acc_address.txt", "r");
   // Following three lines are to remove the first three comment lines of the file
   out_scan_file = $fscanf(out_file,"%s", answer); 
