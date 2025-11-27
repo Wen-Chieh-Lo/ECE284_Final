@@ -11,7 +11,8 @@ module corelet(
     input ofifo_rd,
     output ofifo_valid,
     output [127:0]psum_out,
-    output [psum_bw * col - 1 : 0] out_data
+    output [psum_bw * col - 1 : 0] out_data,
+    input relu_valid
 );
     parameter bw = 4;
     parameter psum_bw = 16;
@@ -63,16 +64,17 @@ module corelet(
         .o_ready(),
         .o_valid(ofifo_valid)
         );
-genvar i;
-for (i = 0; i < col; i = i + 1)begin
-    sfu #(.psum_bw(psum_bw)) sfu_inst(
-        .clk(clk),
-        .rst(reset),
-        .in_valid(accum), // When valid == 1, data transfer into SFU. 
-        .in(psum_accum_in[psum_bw * (i + 1) - 1 : psum_bw * i]),
-        .out(out_data[psum_bw * (i + 1) - 1 : psum_bw * i])
-    );
-end
+    genvar i;
+    for (i = 0; i < col; i = i + 1)begin
+        sfu #(.psum_bw(psum_bw)) sfu_inst(
+            .clk(clk),
+            .rst(reset),
+            .acc_valid(accum), // When valid == 1, data transfer into SFU. 
+	    .relu_valid(relu_valid),
+            .in(psum_accum_in[psum_bw * (i + 1) - 1 : psum_bw * i]),
+            .out(out_data[psum_bw * (i + 1) - 1 : psum_bw * i])
+        );
+    end
 
 
 endmodule

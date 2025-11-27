@@ -1,7 +1,7 @@
 module core  (
 	input clk,
     input reset,
-	input [33:0] inst,
+	input [34:0] inst,
 	output ofifo_valid,
     input [bw*row-1 : 0 ]  D_xmem, 
     output [psum_bw*col-1 : 0 ] sfp_out
@@ -57,7 +57,8 @@ corelet #(
     .ofifo_rd(inst[6]),
     .ofifo_valid(ofifo_valid),
     .psum_out(D_pmem),
-    .out_data(sfp_out)
+    .out_data(sfp_out),
+    .relu_valid(inst[34])
 
 );
 
