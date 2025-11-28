@@ -371,8 +371,9 @@ task run_sim;
 
     if (i>0) begin
      out_scan_file = $fscanf(out_file,"%128b", answer); // reading from out file to answer
-       if (sfp_out == answer)
-         $display("%2d-th output featuremap Data matched! :D", i); 
+       if (sfp_out == answer)begin
+         $display("%2d-th output featuremap Data matched! :D", i);
+      end
        else begin
          $display("%2d-th output featuremap Data ERROR!!", i); 
          $display("sfpout: %128b", sfp_out);
@@ -405,7 +406,7 @@ task run_sim;
         end else begin
           CEN_pmem = 1; WEN_pmem = 1;
         end
-        if (j>0)  acc = 1;  
+        if (j>0)  acc = 1; 
       #0.5 clk = 1'b1;   
     end
 

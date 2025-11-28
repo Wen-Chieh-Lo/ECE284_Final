@@ -8,8 +8,6 @@ module sfu(
 );
 parameter psum_bw = 16;
 reg signed [psum_bw - 1 : 0] psum;
-reg signed [psum_bw - 1 : 0] relu_ff;
-reg relu_valid_ff;
 
 // for acc
 always @ (posedge clk or posedge rst) begin
@@ -21,25 +19,8 @@ always @ (posedge clk or posedge rst) begin
   end
 end
 
-// for relu
-always @ (posedge clk or posedge rst) begin
-  if (rst) begin
-    relu_ff <= {psum_bw{1'b0}};
-  end
-  else if (relu_valid) begin
-    relu_ff <= (in[psum_bw-1]==1'b1) ? {psum_bw{1'b0}} : in;
-  end
-end
-always @ (posedge clk or posedge rst) begin
-  if (rst) begin
-    relu_valid_ff <= 1'b0;
-  end
-  else begin
-    relu_valid_ff <= relu_valid;
-  end
-end
 
 // final muxing
-assign out = (relu_valid_ff==1'b1) ? relu_ff : psum;
+assign out = (relu_valid && psum[psum_bw-1]) ? 0 : psum;
 
 endmodule
