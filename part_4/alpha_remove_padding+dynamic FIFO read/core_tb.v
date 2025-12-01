@@ -247,27 +247,37 @@ task run_sim;
       #0.5 clk = 1'b0;  
       l0_wr = 1; 
       A_xmem = A_xmem + 1;
+      if(t > 0)begin
+        l0_rd = 1;
+        load = 1;  
+        weight_or_activation = 1;
+      end
       #0.5 clk = 1'b1;
     end
 
     #0.5 clk = 1'b0;  
     WEN_xmem = 1;  CEN_xmem = 1;
     l0_wr = 0; A_xmem = 0;
+    l0_rd = 1; 
+    load = 1; 
+    weight_or_activation = 1;
     #0.5 clk = 1'b1; 
     /////////////////////////////////////
 
 
 
     /////// Kernel loading to PEs ///////
-    for (t=0; t<col; t=t+1) begin  
-      #0.5 clk = 1'b0;  
-      l0_rd = 1; 
-      load = 1; 
-      weight_or_activation = 1;
-      #0.5 clk = 1'b1;
-    end
+    // for (t=0; t<col; t=t+1) begin  
+    //   #0.5 clk = 1'b0;  
+    //   l0_rd = 1; 
+    //   load = 1; 
+    //   weight_or_activation = 1;
+    //   #0.5 clk = 1'b1;
+    // end
 
-    #0.5 clk = 1'b0;  l0_rd = 0; load = 0;
+    #0.5 clk = 1'b0;  l0_rd = 0; load = 0; weight_or_activation = 1;
+    #0.5 clk = 1'b1;
+    #0.5 clk = 1'b0; 
     #0.5 clk = 1'b1; 
     /////////////////////////////////////
   
@@ -298,6 +308,11 @@ task run_sim;
       else begin
         A_xmem = A_xmem + 1;
       end
+      if(t>0)begin
+        execute = 1;
+        l0_rd = 1; 
+        weight_or_activation = 0;
+      end
       #0.5 clk = 1'b1;
     end
 
@@ -308,26 +323,27 @@ task run_sim;
 
 
     /////// Execution ///////
-    for (t=0; t<(16+row+col); t=t+1) begin  
+    for (t=0; t<(1+row+col); t=t+1) begin  
       #0.5 clk = 1'b0;
-      if(t >= 16)begin
-        execute = 0;
-        l0_rd = 0;
+      if(t > 0) begin
+        ofifo_rd = 1;   
       end
-      else begin
-        execute = 1;
-        l0_rd = 1; 
-        weight_or_activation = 0;
+      if(t > 1) begin
+        WEN_pmem = 0; CEN_pmem = 0; 
+        if(t > 2) A_pmem = A_pmem + 1; 
       end
-      
       #0.5 clk = 1'b1;
-
     end
-      #0.5 clk = 1'b0;
-      execute = 0;
-      l0_rd = 0;
-      load = 0;
-      #0.5 clk = 1'b1;
+    #0.5 clk = 1'b0;
+    execute = 0;
+    l0_rd = 0;
+    load = 0;
+    if(ofifo_valid) begin
+      ofifo_rd = 1;
+      WEN_pmem = 0; CEN_pmem = 0; 
+      A_pmem = A_pmem + 1;    
+    end
+    #0.5 clk = 1'b1;
     /////////////////////////////////////
 
 
@@ -335,19 +351,15 @@ task run_sim;
     //////// OFIFO READ ////////
     // Ideally, OFIFO should be read while execution, but we have enough ofifo
     // depth so we can fetch out after execution.
-    #0.5 clk = 1'b0;  
-    ofifo_rd = 1;
+    #0.5 clk = 1'b0;
+    ofifo_rd = 0;
+    if(ofifo_valid) begin
+      WEN_pmem = 0; CEN_pmem = 0; 
+      if (t>0) A_pmem = A_pmem + 1;    
+    end
     #0.5 clk = 1'b1;   
 
-    if(ofifo_valid) begin
-      for(t=0; t<17; t=t+1) begin
-        #0.5 clk = 1'b0;  
-        
-        WEN_pmem = 0; CEN_pmem = 0; 
-        if (t>0) A_pmem = A_pmem + 1; 
-        #0.5 clk = 1'b1;          
-      end
-    end
+    
 
     #0.5 clk = 1'b0;  
     WEN_pmem = 1;  CEN_pmem = 1;
@@ -403,16 +415,8 @@ task run_sim;
     for (j=0; j<10; j=j+1) begin 
 
       #0.5 clk = 1'b0;   
-
         if (j<len_kij) begin
           CEN_pmem = 0; WEN_pmem = 1; 
-          // case((j / len_kij_sqrt) % len_kij_sqrt)
-          //   0: A_pmem = (11'd0 + i) + 11'd37 * (j % len_kij_sqrt) + 11'd2 * (i / len_onij_sqrt); // 0, 114, 228
-          //   1: A_pmem = (11'd114 + i) + 11'd37 * (j % len_kij_sqrt) + 11'd2 * (i / len_onij_sqrt);
-          //   2: A_pmem = (11'd228 + i) + 11'd37 * (j % len_kij_sqrt) + 11'd2 * (i / len_onij_sqrt);
-          // endcase
-          //acc_scan_file = $fscanf(acc_file, "%11b", A_pmem_tmp);
-          //if(A_pmem != A_pmem_tmp) $display("%11b, %11b", A_pmem, A_pmem_tmp);
           A_pmem = 16 * j + i;
         end else begin
           CEN_pmem = 1; WEN_pmem = 1;
