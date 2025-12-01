@@ -23,21 +23,22 @@ module l0 (clk, in, out, rd, wr, o_full, reset, o_ready);
   assign o_ready = !(|full);
   assign o_full  = (|full);
 
-
-  for(i = 0; i < row; i=i+1)begin
-        fifo_depth64 #(.bw(bw)) fifo_inst(
-         .rd_clk(clk),
-         .wr_clk(clk),
-         .rd(rd_en[i]),
-         .wr(wr),
-         .reset(reset),
-         .o_full(full[i]),
-         .o_empty(empty[i]),
-         .in(in[(i+1)*bw- 1 : i*bw]),
-         .out(out[(i+1)*bw- 1 : i*bw])
-      );
-   end
-
+  generate
+	  for(i = 0; i < row; i=i+1) begin : fifo_n
+			  fifo_depth64 #(.bw(bw)) fifo_inst(
+				.rd_clk(clk),
+				.wr_clk(clk),
+				.rd(rd_en[i]),
+				.wr(wr),
+				.reset(reset),
+				.o_full(full[i]),
+				.o_empty(empty[i]),
+				.in(in[(i+1)*bw- 1 : i*bw]),
+				.out(out[(i+1)*bw- 1 : i*bw])
+			);
+		end
+  endgenerate
+  
   always @ (posedge clk) begin
    if (reset) begin
       rd_en <= 8'b00000000;

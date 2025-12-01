@@ -27,23 +27,27 @@ sram_32b_w2048 #(
 
 wire [127:0] D_pmem, Q_pmem;
 genvar i;
-for(i = 0; i < 4; i = i + 1)begin
-    sram_32b_w2048 #(
-    .num(2048)
-    ) partial_mem(
-        .CLK(clk),
-        .WEN(inst[31]),
-        .CEN(inst[32]),
-        .D(D_pmem[(i+1) * 32 - 1: i*32]),
-        .A(inst[30:20]),
-        .Q(Q_pmem[(i+1) * 32 - 1: i*32])
-    );
-end
-
+generate
+	for(i = 0; i < 4; i = i + 1) begin : sram_n
+		 sram_32b_w2048 #(
+		 .num(2048)
+		 ) partial_mem(
+			  .CLK(clk),
+			  .WEN(inst[31]),
+			  .CEN(inst[32]),
+			  .D(D_pmem[(i+1) * 32 - 1: i*32]),
+			  .A(inst[30:20]),
+			  .Q(Q_pmem[(i+1) * 32 - 1: i*32])
+		 );
+	end
+endgenerate
 
 
 corelet #(
-
+	.bw(bw),
+	.col(col),
+	.psum_bw(psum_bw),
+	.row(row)
 ) corelet_inst(
     .clk(clk),
     .reset(reset),

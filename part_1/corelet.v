@@ -65,16 +65,18 @@ module corelet(
         .o_valid(ofifo_valid)
         );
     genvar i;
-    for (i = 0; i < col; i = i + 1)begin
-        sfu #(.psum_bw(psum_bw)) sfu_inst(
-            .clk(clk),
-            .rst(reset),
-            .acc_valid(accum), // When valid == 1, data transfer into SFU. 
-	    .relu_valid(relu_valid),
-            .in(psum_accum_in[psum_bw * (i + 1) - 1 : psum_bw * i]),
-            .out(out_data[psum_bw * (i + 1) - 1 : psum_bw * i])
-        );
-    end
+	 generate
+		 for (i = 0; i < col; i = i + 1) begin : sfu_n
+			  sfu #(.psum_bw(psum_bw)) sfu_inst(
+					.clk(clk),
+					.rst(reset),
+					.acc_valid(accum), // When valid == 1, data transfer into SFU. 
+			 .relu_valid(relu_valid),
+					.in(psum_accum_in[psum_bw * (i + 1) - 1 : psum_bw * i]),
+					.out(out_data[psum_bw * (i + 1) - 1 : psum_bw * i])
+			  );
+		 end
+	 endgenerate
 
 
 endmodule

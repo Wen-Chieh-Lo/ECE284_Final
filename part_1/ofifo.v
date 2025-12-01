@@ -25,20 +25,21 @@ module ofifo (clk, in, out, rd, wr, o_full, reset, o_ready, o_valid);
   assign o_full  = (|full);
   assign o_valid = !(|empty);
 
-  for (i=0; i<col ; i=i+1) begin : col_num
-      fifo_depth64 #(.bw(psum_bw)) fifo_instance (
-        .rd_clk(clk),
-        .wr_clk(clk),
-        .rd(rd_en),
-        .wr(wr[i]),
-        .reset(reset),
-        .o_full(full[i]),
-        .o_empty(empty[i]),
-        .in(in[(i+1)*psum_bw - 1 : i*psum_bw]),
-        .out(out[(i+1)*psum_bw - 1 : i*psum_bw])
-        );
-  end
-
+  generate
+	  for (i=0; i<col ; i=i+1) begin : col_num
+			fifo_depth64 #(.bw(psum_bw)) fifo_instance (
+			  .rd_clk(clk),
+			  .wr_clk(clk),
+			  .rd(rd_en),
+			  .wr(wr[i]),
+			  .reset(reset),
+			  .o_full(full[i]),
+			  .o_empty(empty[i]),
+			  .in(in[(i+1)*psum_bw - 1 : i*psum_bw]),
+			  .out(out[(i+1)*psum_bw - 1 : i*psum_bw])
+			  );
+	  end
+	endgenerate
 
   always @ (posedge clk) begin
    if (reset) begin
