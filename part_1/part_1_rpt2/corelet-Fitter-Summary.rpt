@@ -1,0 +1,59 @@
+Summary report for corelet
+Mon Dec  1 16:04:59 2025
+Quartus Prime Version 25.1std.0 Build 1129 10/21/2025 SC Lite Edition
+
+
+---------------------
+; Table of Contents ;
+---------------------
+  1. Legal Notice
+  2. Fitter Summary
+
+
+
+----------------
+; Legal Notice ;
+----------------
+Copyright (C) 2025  Altera Corporation. All rights reserved.
+Your use of Altera Corporation's design tools, logic functions 
+and other software and tools, and any partner logic 
+functions, and any output files from any of the foregoing 
+(including device programming or simulation files), and any 
+associated documentation or information are expressly subject 
+to the terms and conditions of the Altera Program License 
+Subscription Agreement, the Altera Quartus Prime License Agreement,
+the Altera IP License Agreement, or other applicable license
+agreement, including, without limitation, that your use is for
+the sole purpose of programming logic devices manufactured by
+Altera and sold by Altera or its authorized distributors.  Please
+refer to the Altera Software License Subscription Agreements 
+on the Quartus Prime software download page.
+
+
+
++--------------------------------------------------------------------------------------+
+; Fitter Summary                                                                       ;
++------------------------------------+-------------------------------------------------+
+; Fitter Status                      ; Successful - Mon Dec  1 15:45:12 2025           ;
+; Quartus Prime Version              ; 25.1std.0 Build 1129 10/21/2025 SC Lite Edition ;
+; Revision Name                      ; corelet                                         ;
+; Top-level Entity Name              ; corelet                                         ;
+; Family                             ; Cyclone IV GX                                   ;
+; Device                             ; EP4CGX150DF31I7AD                               ;
+; Timing Models                      ; Final                                           ;
+; Total logic elements               ; 12,897 / 149,760 ( 9 % )                        ;
+;     Total combinational functions  ; 9,561 / 149,760 ( 6 % )                         ;
+;     Dedicated logic registers      ; 8,514 / 149,760 ( 6 % )                         ;
+; Total registers                    ; 8514                                            ;
+; Total pins                         ; 427 / 508 ( 84 % )                              ;
+; Total virtual pins                 ; 0                                               ;
+; Total memory bits                  ; 0 / 6,635,520 ( 0 % )                           ;
+; Embedded Multiplier 9-bit elements ; 0 / 720 ( 0 % )                                 ;
+; Total GXB Receiver Channel PCS     ; 0 / 8 ( 0 % )                                   ;
+; Total GXB Receiver Channel PMA     ; 0 / 8 ( 0 % )                                   ;
+; Total GXB Transmitter Channel PCS  ; 0 / 8 ( 0 % )                                   ;
+; Total GXB Transmitter Channel PMA  ; 0 / 8 ( 0 % )                                   ;
+; Total PLLs                         ; 0 / 8 ( 0 % )                                   ;
++------------------------------------+-------------------------------------------------+
+
+

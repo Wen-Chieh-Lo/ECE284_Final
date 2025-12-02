@@ -27,7 +27,7 @@ module ofifo (clk, in, out, rd, wr, o_full, reset, o_ready, o_valid);
 
   generate
 	  for (i=0; i<col ; i=i+1) begin : col_num
-			fifo_depth64 #(.bw(psum_bw)) fifo_instance (
+			fifo_depth36 #(.bw(psum_bw)) fifo_instance (
 			  .rd_clk(clk),
 			  .wr_clk(clk),
 			  .rd(rd_en),
