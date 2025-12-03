@@ -19,8 +19,6 @@ assign a_pad = {1'b0, a}; // force to be unsigned number
 // x should be {1'b0, 8bit unsigned}, y should be {sign 1bit, int 7bit}
 approx_mult approx_mult_i(.x(a_pad), .y(b), .out(product));
 
-assign product = a_pad * b;
-
 assign psum = product + c;
 assign out = psum;
 
