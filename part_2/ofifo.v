@@ -46,6 +46,7 @@ module ofifo (clk, in, out, rd, wr, o_full, reset, o_ready, o_valid);
    end
    else begin
       rd_en <= rd;
+      //if(rd)$monitor("ofifo out = %b", out);
    end
  
   end

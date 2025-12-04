@@ -19,8 +19,6 @@ module mac_array (clk, reset, out_s, in_w, in_n, inst_w, valid, mode);
   wire   [psum_bw*col*(row+1)-1:0] temp;
   wire   [row*col-1:0] valid_temp;
 
-  reg mode_q;
-
   genvar i;
  
   assign out_s = temp[psum_bw*col*(row+1)-1:psum_bw*col*row];
@@ -36,12 +34,14 @@ module mac_array (clk, reset, out_s, in_w, in_n, inst_w, valid, mode);
 	 .in_n(temp[psum_bw*col*i-1:psum_bw*col*(i-1)]),
          .valid(valid_temp[col*i-1:col*(i-1)]),
 	 .out_s(temp[psum_bw*col*(i+1)-1:psum_bw*col*(i)]),
-   .mode(mode_q)
+   .mode(mode)
    );
   end
 
   always @ (posedge clk) begin
-    mode_q <= mode;
+    if (reset) begin
+      inst_w_temp <= 0;
+    end
 
     //valid <= valid_temp[row*col-1:row*col-8];
     inst_w_temp[1:0]   <= inst_w; 

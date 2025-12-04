@@ -72,7 +72,7 @@ module corelet(
             .clk(clk),
             .rst(reset),
             .acc_valid(accum), // When valid == 1, data transfer into SFU. 
-	    .relu_valid(relu_valid),
+	        .relu_valid(relu_valid),
             .in(psum_accum_in[psum_bw * (i + 1) - 1 : psum_bw * i]),
             .out(out_data[psum_bw * (i + 1) - 1 : psum_bw * i])
         );
