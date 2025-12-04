@@ -5,4 +5,9 @@
 2. Part 2 (/part\_2)
 3. Part 3 (/part\_3)
 4. Alpahs (/Alpha)
+    1. Hybrid Pruning
+    2. Approximate Multiplier for Low Power
+    3. Region-aware Activation Extraction
+    4. Hybrid Read Mode and Pipelined RD/WR
+    5. Zero Skipping MAC Operation
 5. Poster (/Poster)
