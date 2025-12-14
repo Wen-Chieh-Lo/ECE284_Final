@@ -60,7 +60,7 @@ cd Alpha3_Region_Aware_Activation_Extraction/hardware/sim
 ### Step 2: Compile the RTL design
 
 ```bash
-iverilog -g2012 -f filelist -o sim.out
+iverilog -f filelist
 ```
 
 - The `filelist` specifies all required Verilog source files and include paths.
@@ -71,7 +71,7 @@ iverilog -g2012 -f filelist -o sim.out
 ### Step 3: Run the simulation
 
 ```bash
-vvp sim.out
+vvp a.out
 ```
 
 - The testbench (`core_tb.v`) will automatically load input data from the `datafiles/` directory using relative paths.
