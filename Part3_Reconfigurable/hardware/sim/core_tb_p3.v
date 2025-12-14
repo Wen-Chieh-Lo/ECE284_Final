@@ -132,21 +132,21 @@ initial begin
   mode = {`OS, `BIT4};
 
   // modify input to output stationary
-  generate_modified_acti("txt_files/activation.txt", "txt_files/modi_acti.txt");
-  transpose_weight("txt_files/weight_kij0.txt", "txt_files/os_wei_kij0.txt");
-  transpose_weight("txt_files/weight_kij1.txt", "txt_files/os_wei_kij1.txt");
-  transpose_weight("txt_files/weight_kij2.txt", "txt_files/os_wei_kij2.txt");
-  transpose_weight("txt_files/weight_kij3.txt", "txt_files/os_wei_kij3.txt");
-  transpose_weight("txt_files/weight_kij4.txt", "txt_files/os_wei_kij4.txt");
-  transpose_weight("txt_files/weight_kij5.txt", "txt_files/os_wei_kij5.txt");
-  transpose_weight("txt_files/weight_kij6.txt", "txt_files/os_wei_kij6.txt");
-  transpose_weight("txt_files/weight_kij7.txt", "txt_files/os_wei_kij7.txt");
-  transpose_weight("txt_files/weight_kij8.txt", "txt_files/os_wei_kij8.txt");
+  generate_modified_acti("../datafiles/activation.txt", "../datafiles/modi_acti.txt");
+  transpose_weight("../datafiles/weight_kij0.txt", "../datafiles/os_wei_kij0.txt");
+  transpose_weight("../datafiles/weight_kij1.txt", "../datafiles/os_wei_kij1.txt");
+  transpose_weight("../datafiles/weight_kij2.txt", "../datafiles/os_wei_kij2.txt");
+  transpose_weight("../datafiles/weight_kij3.txt", "../datafiles/os_wei_kij3.txt");
+  transpose_weight("../datafiles/weight_kij4.txt", "../datafiles/os_wei_kij4.txt");
+  transpose_weight("../datafiles/weight_kij5.txt", "../datafiles/os_wei_kij5.txt");
+  transpose_weight("../datafiles/weight_kij6.txt", "../datafiles/os_wei_kij6.txt");
+  transpose_weight("../datafiles/weight_kij7.txt", "../datafiles/os_wei_kij7.txt");
+  transpose_weight("../datafiles/weight_kij8.txt", "../datafiles/os_wei_kij8.txt");
 
   // start execution
   reset_hardware();
   $display("Part 3: Output stationary");
-  run_sim("txt_files/modi_acti.txt", "txt_files/os_wei", "txt_files/output.txt");
+  run_sim("../datafiles/modi_acti.txt", "../datafiles/os_wei", "../datafiles/output.txt");
 
   #10 $finish;
 end

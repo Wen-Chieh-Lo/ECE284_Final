@@ -112,7 +112,7 @@ initial begin
 
   reset_hardware();
   $display("Part 1: test");
-  run_sim("txt_files/activation.txt", "txt_files/weight", "txt_files/output.txt");
+  run_sim("../datafiles/activation.txt", "../datafiles/weight", "../datafiles/output.txt");
   //run_sim("activation.txt", "weight", "output.txt");
   #10 $finish;
 end
@@ -354,7 +354,7 @@ task run_sim;
   ////////// Accumulation /////////
   //out_file = $fopen("out.txt", "r");  
   out_file = $fopen(out_file, "r");  
-  //acc_file = $fopen("txt_files/acc_address.txt", "r");
+  //acc_file = $fopen("../datafiles/acc_address.txt", "r");
   // Following three lines are to remove the first three comment lines of the file
   out_scan_file = $fscanf(out_file,"%s", answer); 
   out_scan_file = $fscanf(out_file,"%s", answer); 
