@@ -9,16 +9,17 @@ All data files are accessed using **relative paths** so that they can be replace
 ---
 
 ## Directory Structure
-datafiles/
-├── activation.txt
-├── weight_kij0.txt
-├── weight_kij1.txt
-├── ...
-├── psum_kij0.txt
-├── psum_kij1.txt
-├── ...
-├── psum_kij8.txt
-├── output.txt
+
+- `datafiles/`
+  - `activation.txt`
+  - `weight_kij0.txt`
+  - `weight_kij1.txt`
+  - `...`
+  - `psum_kij0.txt`
+  - `psum_kij1.txt`
+  - `...`
+  - `psum_kij8.txt`
+  - `output.txt`
 
 ---
 
