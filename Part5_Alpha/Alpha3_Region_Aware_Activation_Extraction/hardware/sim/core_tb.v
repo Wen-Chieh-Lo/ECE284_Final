@@ -22,7 +22,7 @@ parameter len_onij_sqrt = 4;
 reg clk = 0;
 reg reset = 1;
 
-wire [35:0] inst_q; 
+wire [34:0] inst_q; 
 
 reg [1:0]  inst_w_q = 0; 
 reg [bw*row-1:0] D_xmem_q = 0;  // Memory Data
@@ -53,7 +53,6 @@ reg [1:0]  inst_w;
 reg [bw*row-1:0] D_xmem;
 reg [psum_bw*col-1:0] answer;
 
-reg weight_or_activation;
 reg relu;
 reg ofifo_rd;
 reg ififo_wr;
@@ -79,7 +78,6 @@ integer captured_data;
 integer t, i, j, k, kij;
 integer error;
 
-assign inst_q[35] = weight_or_activation;
 assign inst_q[34] = relu_q;
 assign inst_q[33] = acc_q;
 assign inst_q[32] = CEN_pmem_q;
@@ -155,7 +153,6 @@ task run_sim;
   execute  = 0;
   load     = 0;
   relu     = 0;
-  weight_or_activation = 0; // 0 for activation, 1 for weight
 
   //x_file = $fopen("activation_tile0.txt", "r");
   x_file = $fopen(act_file, "r");
@@ -250,7 +247,6 @@ task run_sim;
       if(t > 0)begin
         l0_rd = 1;
         load = 1;  
-        weight_or_activation = 1;
       end
       #0.5 clk = 1'b1;
     end
@@ -260,7 +256,6 @@ task run_sim;
     l0_wr = 0; A_xmem = 0;
     l0_rd = 1; 
     load = 1; 
-    weight_or_activation = 1;
     #0.5 clk = 1'b1; 
     /////////////////////////////////////
 
@@ -271,11 +266,10 @@ task run_sim;
     //   #0.5 clk = 1'b0;  
     //   l0_rd = 1; 
     //   load = 1; 
-    //   weight_or_activation = 1;
     //   #0.5 clk = 1'b1;
     // end
 
-    #0.5 clk = 1'b0;  l0_rd = 0; load = 0; weight_or_activation = 1;
+    #0.5 clk = 1'b0;  l0_rd = 0; load = 0; 
     #0.5 clk = 1'b1;
     #0.5 clk = 1'b0; 
     #0.5 clk = 1'b1; 
@@ -311,7 +305,6 @@ task run_sim;
       if(t>0)begin
         execute = 1;
         l0_rd = 1; 
-        weight_or_activation = 0;
       end
       #0.5 clk = 1'b1;
     end
