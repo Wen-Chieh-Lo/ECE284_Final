@@ -1,0 +1,3 @@
+../verilog/1_proposed/approx_mult.v
+../verilog/1_proposed/basic_func.v
+mult_tb.v
