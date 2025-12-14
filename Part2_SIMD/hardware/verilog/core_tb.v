@@ -130,13 +130,13 @@ initial begin
   reset_hardware();
   $display("Part 2: test 4bit");
   mode_q = 0;
-  run_sim_4bit("txt_files/activation.txt", "txt_files/weight", "txt_files/output.txt");
+  run_sim_4bit("../datafiles/4bit/activation.txt", "../datafiles/4bit/weight", "../datafiles/4bit/output.txt");
 
   #30
   reset_hardware();
   $display("Part 2: test 2bit");
   mode_q = 1;
-  run_sim_2bit_test("txt_files_test/activation.txt", "txt_files_test/weight", "txt_files_test/output.txt");
+  run_sim_2bit_test("../datafiles/2bit/activation.txt", "../datafiles/2bit/weight", "../datafiles/2bit/output.txt");
   $finish;
 end
 
@@ -164,9 +164,9 @@ task reset_hardware;
 endtask
 
 task run_sim_4bit;
-  input [8*30:1] act_file; // txt_files/activation.txt
-  input [8*30:1] wgt_file; // txt_files/weight
-  input [8*30:1] out_file; // txt_files/output.txt
+  input [8*300:1] act_file; // txt_files/activation.txt
+  input [8*300:1] wgt_file; // txt_files/weight
+  input [8*300:1] out_file; // txt_files/output.txt
   begin
   inst_w   = 0; 
   D_xmem   = 0;
