@@ -110,7 +110,7 @@ initial begin
 
   reset_hardware();
   $display("Part 1: test");
-  run_sim("txt_files/activation.txt", "txt_files/weight", "txt_files/output.txt");
+  run_sim("../datafiles/activation.txt", "../datafiles/weight", "../datafiles/output.txt");
   //run_sim("activation.txt", "weight", "output.txt");
   #10 $finish;
 end
