@@ -1,4 +1,5 @@
-To execute output-stationary and weight-stationary modes in a reconfigurable manner, the Verilog design files remain identical, and only the simulation testbench, core_tb_p1.v or core_tb_p3.v, needs to be selected.
+To execute output-stationary and weight-stationary modes in a reconfigurable manner, the Verilog design files remain identical, and only the simulation testbench, core_tb_p1.v or core_tb_p3.v, needs to be selected. 
+(also filelist should be modified accordingly)
 
 In the case of core_tb_p1.v, it is identical to Part 1, except that as the input bit-width of the top module core.v increased, unused input bits are simply padded with zeros.
 
