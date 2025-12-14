@@ -16,4 +16,4 @@
 ../verilog/sfu.v
 ../verilog/sram_128b_w2048.v
 ../verilog/sram_32b_w2048.v
-core_tb_p1.v
+core_tb_final.v

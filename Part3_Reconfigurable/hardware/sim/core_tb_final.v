@@ -7,7 +7,7 @@
 `define WS 1'b0
 `define OS 1'b1
 
-module core_tb_p3;
+module core_tb_final;
 
 parameter bw = 4;
 parameter psum_bw = 16;
@@ -80,6 +80,9 @@ reg [31:0] D_2D [63:0];
 reg [1:0] mode = 0;
 reg debug_flag = 0;
 
+
+reg mode_select = 1'b0;
+
 integer x_file, x_scan_file ; // file_handler
 integer w_file, w_scan_file ; // file_handler
 integer w0_file, w1_file, w2_file, w3_file, w4_file, w5_file, w6_file, w7_file, w8_file;
@@ -95,7 +98,7 @@ assign inst_q[49] = flush_q;
 assign inst_q[48] = CEN_wmem_q;
 assign inst_q[47] = WEN_wmem_q;
 assign inst_q[46:36] = A_wmem_q;
-assign inst_q[35] = 1'b1; // this is for sel mode,, 1'b0: weight stationary, 1'b1: output stationary
+assign inst_q[35] = mode_select; // this is for sel mode,, 1'b0: weight stationary, 1'b1: output stationary
 assign inst_q[34] = relu_q;
 assign inst_q[33] = acc_q;
 assign inst_q[32] = CEN_pmem_q;
@@ -125,13 +128,24 @@ core  #(.bw(bw), .col(col), .row(row)) core_instance (
 
 
 initial begin
-  $dumpfile("core_tb_p3.vcd");
-  $dumpvars(0,core_tb_p3);
+  $dumpfile("core_tb_final.vcd");
+  $dumpvars(0,core_tb_final);
 
-  // OS
-  mode = {`OS, `BIT4};
+  ///////////////////////
+  // WEIGHT STATIONARY //
+  ///////////////////////
+  mode_select = 1'b0;
+  reset_hardware();
+  $display("Part1: weight stationary test");
+  run_sim_ws("../datafiles/activation.txt", "../datafiles/weight", "../datafiles/output.txt");
 
+
+
+  //////////////////////
+  // OUTPUT STATIONARY//
+  //////////////////////
   // modify input to output stationary
+  mode_select = 1'b1;
   generate_modified_acti("../datafiles/activation.txt", "../datafiles/modi_acti.txt");
   transpose_weight("../datafiles/weight_kij0.txt", "../datafiles/os_wei_kij0.txt");
   transpose_weight("../datafiles/weight_kij1.txt", "../datafiles/os_wei_kij1.txt");
@@ -146,7 +160,7 @@ initial begin
   // start execution
   reset_hardware();
   $display("Part 3: Output stationary");
-  run_sim("../datafiles/modi_acti.txt", "../datafiles/os_wei", "../datafiles/output.txt");
+  run_sim_os("../datafiles/modi_acti.txt", "../datafiles/os_wei", "../datafiles/output.txt");
 
   #10 $finish;
 end
@@ -256,7 +270,308 @@ task reset_hardware;
   end
 endtask
 
-task run_sim;
+
+task run_sim_ws;
+  input [8*30:1] act_file;
+  input [8*30:1] wgt_file;
+  input [8*30:1] out_file;
+  begin
+  inst_w   = 0; 
+  D_xmem   = 0;
+  CEN_xmem = 1;
+  WEN_xmem = 1;
+  A_xmem   = 0;
+  ofifo_rd = 0;
+  ififo_wr = 0;
+  ififo_rd = 0;
+  l0_rd    = 0;
+  l0_wr    = 0;
+  execute  = 0;
+  load     = 0;
+  relu     = 0;
+
+  //x_file = $fopen("activation_tile0.txt", "r");
+  x_file = $fopen(act_file, "r");
+  // Following three lines are to remove the first three comment lines of the file
+  x_scan_file = $fscanf(x_file,"%s", captured_data);
+  x_scan_file = $fscanf(x_file,"%s", captured_data);
+  x_scan_file = $fscanf(x_file,"%s", captured_data);
+
+
+
+  /////// Activation data writing to memory ///////
+  for (t=0; t<len_nij; t=t+1) begin  
+    #0.5 clk = 1'b0;  
+    x_scan_file = $fscanf(x_file,"%32b", D_xmem); 
+    WEN_xmem = 0; CEN_xmem = 0; 
+    if (t>0) A_xmem = A_xmem + 1;
+    #0.5 clk = 1'b1;   
+  end
+
+  #0.5 clk = 1'b0;  WEN_xmem = 1;  CEN_xmem = 1; A_xmem = 0;
+  #0.5 clk = 1'b1; 
+
+  $fclose(x_file);
+  /////////////////////////////////////////////////
+
+
+  for (kij=0; kij<9; kij=kij+1) begin  // kij loop
+
+    case(kij)
+     0: w_file_name = {wgt_file, "_kij0.txt"};
+     1: w_file_name = {wgt_file, "_kij1.txt"};
+     2: w_file_name = {wgt_file, "_kij2.txt"};
+     3: w_file_name = {wgt_file, "_kij3.txt"};
+     4: w_file_name = {wgt_file, "_kij4.txt"};
+     5: w_file_name = {wgt_file, "_kij5.txt"};
+     6: w_file_name = {wgt_file, "_kij6.txt"};
+     7: w_file_name = {wgt_file, "_kij7.txt"};
+     8: w_file_name = {wgt_file, "_kij8.txt"};
+    endcase
+    
+
+    w_file = $fopen(w_file_name, "r");
+    // Following three lines are to remove the first three comment lines of the file
+    w_scan_file = $fscanf(w_file,"%s", captured_data);
+    w_scan_file = $fscanf(w_file,"%s", captured_data);
+    w_scan_file = $fscanf(w_file,"%s", captured_data);
+
+    #0.5 clk = 1'b0;   reset = 1;
+    #0.5 clk = 1'b1; 
+
+    for (i=0; i<10 ; i=i+1) begin
+      #0.5 clk = 1'b0;
+      #0.5 clk = 1'b1;  
+    end
+
+    #0.5 clk = 1'b0;   reset = 0;
+    #0.5 clk = 1'b1; 
+
+    #0.5 clk = 1'b0;   
+    #0.5 clk = 1'b1;   
+
+
+
+
+
+    /////// Kernel data writing to memory ///////
+
+    A_xmem = 11'b10000000000;
+
+    for (t=0; t<col; t=t+1) begin  
+      #0.5 clk = 1'b0;  
+      w_scan_file = $fscanf(w_file,"%32b", D_xmem); 
+      WEN_xmem = 0; CEN_xmem = 0; 
+      if (t>0) A_xmem = A_xmem + 1; 
+      #0.5 clk = 1'b1;  
+    end
+
+    #0.5 clk = 1'b0;  WEN_xmem = 1;  CEN_xmem = 1; A_xmem = 0;
+    #0.5 clk = 1'b1; 
+    /////////////////////////////////////
+
+
+
+    /////// Kernel data writing to L0 ///////
+    A_xmem = 11'b10000000000;
+    #0.5 clk = 1'b0; WEN_xmem = 1; CEN_xmem = 0; 
+    #0.5 clk = 1'b1;
+    for (t=0; t<col; t=t+1) begin  
+      #0.5 clk = 1'b0;  
+      l0_wr = 1; 
+      A_xmem = A_xmem + 1;
+      #0.5 clk = 1'b1;
+    end
+
+    #0.5 clk = 1'b0;  
+    WEN_xmem = 1;  CEN_xmem = 1;
+    l0_wr = 0; A_xmem = 0;
+    #0.5 clk = 1'b1; 
+    /////////////////////////////////////
+
+
+
+    /////// Kernel loading to PEs ///////
+    for (t=0; t<col; t=t+1) begin  
+      #0.5 clk = 1'b0;  
+      l0_rd = 1; 
+      load = 1; 
+      #0.5 clk = 1'b1;
+    end
+
+    #0.5 clk = 1'b0;  l0_rd = 0; load = 0;
+    #0.5 clk = 1'b1; 
+    /////////////////////////////////////
+  
+
+
+    ////// provide some intermission to clear up the kernel loading ///
+    #0.5 clk = 1'b0;  load = 0; l0_rd = 0;
+    #0.5 clk = 1'b1;  
+  
+
+    for (i=0; i<10 ; i=i+1) begin
+      #0.5 clk = 1'b0;
+      #0.5 clk = 1'b1;  
+    end
+    /////////////////////////////////////
+
+
+
+    /////// Activation data writing to L0 ///////
+    #0.5 clk = 1'b0; WEN_xmem = 1; CEN_xmem = 0; 
+    #0.5 clk = 1'b1;
+    for (t=0; t<len_nij; t=t+1) begin  
+      #0.5 clk = 1'b0;  
+      l0_wr = 1;
+      A_xmem = A_xmem + 1;
+      #0.5 clk = 1'b1;
+    end
+
+    #0.5 clk = 1'b0;  l0_wr = 0; WEN_xmem = 1;  CEN_xmem = 1; A_xmem = 0;
+    #0.5 clk = 1'b1; 
+    /////////////////////////////////////
+
+
+
+    /////// Execution ///////
+    for (t=0; t<(len_nij+row+col); t=t+1) begin  
+      #0.5 clk = 1'b0;
+      if(t >= len_nij)begin
+        execute = 0;
+        l0_rd = 0;
+      end
+      else begin
+        execute = 1;
+        l0_rd = 1; 
+      end
+      
+      #0.5 clk = 1'b1;
+
+    end
+      #0.5 clk = 1'b0;
+      execute = 0;
+      l0_rd = 0;
+      load = 0;
+      #0.5 clk = 1'b1;
+    /////////////////////////////////////
+
+
+
+    //////// OFIFO READ ////////
+    // Ideally, OFIFO should be read while execution, but we have enough ofifo
+    // depth so we can fetch out after execution.
+    #0.5 clk = 1'b0;  
+    ofifo_rd = 1;
+    #0.5 clk = 1'b1;   
+
+    if(ofifo_valid) begin
+      for(t=0; t<len_nij + 1; t=t+1) begin
+        #0.5 clk = 1'b0;  
+        
+        WEN_pmem = 0; CEN_pmem = 0; 
+        if (t>0) A_pmem = A_pmem + 1; 
+        #0.5 clk = 1'b1;          
+      end
+    end
+
+    #0.5 clk = 1'b0;  
+    WEN_pmem = 1;  CEN_pmem = 1;
+    ofifo_rd = 0;
+    #0.5 clk = 1'b1; 
+    /////////////////////////////////////
+
+
+  end  // end of kij loop
+
+
+  ////////// Accumulation /////////
+  //out_file = $fopen("out.txt", "r");  
+  out_file = $fopen(out_file, "r");  
+  //acc_file = $fopen("../datafiles/acc_address.txt", "r");
+  // Following three lines are to remove the first three comment lines of the file
+  out_scan_file = $fscanf(out_file,"%s", answer); 
+  out_scan_file = $fscanf(out_file,"%s", answer); 
+  out_scan_file = $fscanf(out_file,"%s", answer); 
+
+  error = 0;
+
+
+
+  $display("############ Verification Start during accumulation #############"); 
+
+  for (i=0; i<len_onij+1; i=i+1) begin 
+
+    #0.5 clk = 1'b0; relu = 0;
+    #0.5 clk = 1'b1; 
+
+    if (i>0) begin
+     out_scan_file = $fscanf(out_file,"%128b", answer); // reading from out file to answer
+       if (sfp_out == answer)begin
+         $display("%2d-th output featuremap Data matched! :D", i);
+      end
+       else begin
+         $display("%2d-th output featuremap Data ERROR!!", i); 
+         $display("sfpout: %128b", sfp_out);
+         $display("answer: %128b", answer);
+         error = 1;
+       end
+    end
+   
+ 
+    #0.5 clk = 1'b0; reset = 1;
+    #0.5 clk = 1'b1;  
+    #0.5 clk = 1'b0; reset = 0; 
+    #0.5 clk = 1'b1;  
+    A_pmem = 0;
+    //A_pmem_tmp = 0;
+
+    for (j=0; j<len_kij+1; j=j+1) begin 
+
+      #0.5 clk = 1'b0;   
+
+        if (j<len_kij) begin
+          CEN_pmem = 0; WEN_pmem = 1; 
+          case((j / len_kij_sqrt) % len_kij_sqrt)
+            0: A_pmem = (11'd0 + i) + 11'd37 * (j % len_kij_sqrt) + 11'd2 * (i / len_onij_sqrt); // 0, 114, 228
+            1: A_pmem = (11'd114 + i) + 11'd37 * (j % len_kij_sqrt) + 11'd2 * (i / len_onij_sqrt);
+            2: A_pmem = (11'd228 + i) + 11'd37 * (j % len_kij_sqrt) + 11'd2 * (i / len_onij_sqrt);
+          endcase
+          //acc_scan_file = $fscanf(acc_file, "%11b", A_pmem_tmp);
+          //if(A_pmem != A_pmem_tmp) $display("%11b, %11b", A_pmem, A_pmem_tmp);
+        end else begin
+          CEN_pmem = 1; WEN_pmem = 1;
+        end
+        if (j>0)  acc = 1; 
+      #0.5 clk = 1'b1;   
+    end
+
+    #0.5 clk = 1'b0; acc = 0; relu = 1;
+    #0.5 clk = 1'b1; 
+  end
+  relu = 0;
+
+  if (error == 0) begin
+  	$display("############ No error detected ##############"); 
+  	$display("########### Project Completed !! ############"); 
+
+  end
+
+  //$fclose(acc_file);
+  //////////////////////////////////
+
+  for (t=0; t<10; t=t+1) begin  
+    #0.5 clk = 1'b0;  
+    #0.5 clk = 1'b1;  
+  end
+
+  //#10 $finish;
+  end
+endtask
+
+
+
+task run_sim_os;
   input [8*30:1] act_file;
   input [8*30:1] wgt_file;
   input [8*30:1] out_file;
